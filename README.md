@@ -19,14 +19,19 @@
 .
 ├── main.lua                 # 主程序入口
 ├── conf.lua                 # LOVE2D 配置
+├── libs/                    # 库文件
+│   ├── gamestate.lua        # 状态机（参考 HUMP）
+│   └── ui.lua               # UI 组件库
 ├── scenes/
-│   └── sceneManager.lua     # 场景管理系统
+│   ├── base_scene.lua       # 基础场景类
+│   └── scenes.lua           # 所有场景定义
 ├── systems/
 │   ├── inventory.lua        # 背包系统
 │   ├── crafting.lua         # 制作系统
 │   └── random.lua           # 随机系统
-└── data/
-    └── scenes.lua           # 所有场景定义
+├── Noto_Sans_SC/
+│   └── NotoSansSC-Regular.ttf  # 中文字体
+└── README.md
 ```
 
 ## 如何运行
@@ -34,28 +39,40 @@
 1. 安装 LOVE2D：https://love2d.org/
 2. 在项目目录运行：`love .`
 
+## 架构说明
+
+### 状态机（Gamestate）
+使用简化的状态机管理游戏场景，参考 HUMP 库的设计：
+- `Gamestate.switch(state)` - 切换场景
+- `Gamestate.update(dt)` - 更新当前场景
+- `Gamestate.draw()` - 绘制当前场景
+
+### 基础场景类（BaseScene）
+所有场景继承自 BaseScene，提供统一的接口：
+- `enter()` - 进入场景时调用
+- `exit()` - 离开场景时调用
+- `update(dt)` - 每帧更新
+- `draw()` - 绘制场景
+- `keypressed(key)` - 键盘输入
+- `mousepressed(x, y, button)` - 鼠标输入
+
 ## 如何扩展
 
 ### 添加新场景
 
-在 `data/scenes.lua` 中添加新场景：
-
 ```lua
-scenes["新场景名"] = {
-    title = "场景标题",
-    text = "场景描述文本",
-    
-    onEnter = function(self)
-        self.choices = {
-            {
-                text = "选项文本",
-                action = function()
-                    sceneManager:loadScene("下一个场景")
-                end
-            }
-        }
-    end
-}
+scenes.myScene = BaseScene.new(
+    "场景标题",
+    "场景描述文本"
+)
+
+function scenes.myScene:enter()
+    BaseScene.enter(self)
+    self.buttons = {
+        { text = "选项1", action = function() Gamestate.switch(scenes.otherScene) end },
+        { text = "选项2", action = function() Gamestate.switch(scenes.anotherScene) end }
+    }
+end
 ```
 
 ### 添加新物品和配方
@@ -69,10 +86,6 @@ crafting.recipes["新物品"] = {
     description = "物品描述"
 }
 ```
-
-### 添加新随机事件
-
-在 `systems/random.lua` 中的 `randomSystem:getRandomEvent()` 函数中添加事件。
 
 ### 添加新系统
 
@@ -95,35 +108,13 @@ crafting.recipes["新物品"] = {
 - **鼠标点击**：直接点击选项
 - **ESC**：退出游戏
 
-## 自定义选项
+## 参考库
 
-### 修改窗口大小
+项目参考了以下 LOVE2D 生态中的优秀库：
 
-编辑 `conf.lua`：
-
-```lua
-t.window.width = 1024
-t.window.height = 768
-```
-
-### 修改字体大小
-
-在 `scenes/sceneManager.lua` 中修改 `love.graphics.newFont()` 的参数。
-
-### 修改颜色
-
-在 `main.lua` 和 `scenes/sceneManager.lua` 中修改 `love.graphics.setColor()` 的 RGB 值。
-
-## 扩展建议
-
-- 添加更多场景和故事线
-- 实现对话系统和 NPC
-- 添加战斗系统
-- 实现存档和读档功能
-- 添加音效和背景音乐
-- 创建更复杂的制作树
-- 添加任务系统
-- 实现技能系统
+- **HUMP** (vrld/hump) - 状态机、计时器等工具
+- **LOVE UI** (rxi/lui) - UI 框架
+- **AnAL** (kikito/AnAL) - 动画库
 
 ## 许可证
 
