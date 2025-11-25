@@ -65,16 +65,25 @@ function BaseScene.new(title, text)
         love.graphics.setColor(1, 1, 1)
         love.graphics.setFont(fonts.small)
         
+        -- 绘制可点击的背包按钮
+        love.graphics.setColor(0.7, 0.7, 0.7)
+        love.graphics.rectangle("line", 10, 705, 80, 30)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("背包", 10, 710, 80, "center")
+        
+        -- 保存背包按钮位置
+        self.inventoryButtonRect = { x = 10, y = 705, w = 80, h = 30 }
+        
         local text = "资源: 木材=" .. gameState.resources.wood .. 
                      " 石头=" .. gameState.resources.stone .. 
                      " 食物=" .. gameState.resources.food
-        love.graphics.printf(text, 10, 710, 980, "left")
+        love.graphics.printf(text, 100, 710, 880, "left")
         
-        local invText = "背包: "
+        local invText = "物品: "
         for item, count in pairs(gameState.inventory) do
             invText = invText .. item .. "x" .. count .. " "
         end
-        love.graphics.printf(invText, 10, 740, 980, "left")
+        love.graphics.printf(invText, 100, 740, 880, "left")
         
         -- 绘制状态栏
         love.graphics.printf("生命值: " .. gameState.character.health .. "/" .. gameState.character.maxHealth, 10, 760, 200, "left")
@@ -99,6 +108,18 @@ function BaseScene.new(title, text)
     
     function scene:mousepressed(x, y, button)
         if button == 1 then
+            -- 检查背包按钮
+            if self.inventoryButtonRect then
+                local rect = self.inventoryButtonRect
+                if x >= rect.x and x <= rect.x + rect.w and
+                   y >= rect.y and y <= rect.y + rect.h then
+                    local invDetail = require("scenes.inventory_detail")
+                    invDetail.previousScene = self
+                    Gamestate.switch(invDetail)
+                    return
+                end
+            end
+            
             local buttonY = 300
             for i, btn in ipairs(self.buttons) do
                 -- 检查鼠标是否在按钮区域内（更宽松的范围）

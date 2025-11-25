@@ -41,6 +41,7 @@ function love.load()
     require("systems.inventory")
     require("systems.crafting")
     require("systems.random")
+    require("systems.ui_inventory")
     saveSystem = require("systems.save")
     
     -- 加载场景
@@ -54,6 +55,9 @@ function love.load()
     scenes.save_success = sl_scenes.save_success
     scenes.load_success = sl_scenes.load_success
     scenes.load_fail = sl_scenes.load_fail
+    
+    -- 加载背包详情场景
+    scenes.inventory_detail = require("scenes.inventory_detail")
     
     randomSystem:init()
     
@@ -73,6 +77,11 @@ end
 
 function love.keypressed(key)
     if key == "escape" then
+        -- 如果在背包界面，不处理 ESC（使用 B 键返回）
+        if Gamestate.current == scenes.inventory_detail then
+            return
+        end
+        
         -- 如果在游戏中，打开菜单；如果在菜单中，退出
         if Gamestate.current and Gamestate.current ~= scenes.menu and 
            Gamestate.current ~= scenes.pause_menu and
